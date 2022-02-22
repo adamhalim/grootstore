@@ -32,19 +32,20 @@ var (
 // and returns *x509.CertPool of the root store.
 func UpdateAppleRootStore() (*x509.CertPool, error) {
 	fmt.Print("Attempting to download Apple root store... ")
-
-	err := downloadAppleRootStore()
-	if err != nil {
-		return nil, err
-	}
-	fmt.Print("Apple downloaded successfully!\n")
-	err = removeUnusedAppleDirectories()
-	if err != nil {
-		return nil, err
-	}
-	err = createAppleRootStorePEM()
-	if err != nil {
-		return nil, err
+	if !fileExists(APPLE_ROOT_STORE) {
+		err := downloadAppleRootStore()
+		if err != nil {
+			return nil, err
+		}
+		fmt.Print("Apple downloaded successfully!\n")
+		err = removeUnusedAppleDirectories()
+		if err != nil {
+			return nil, err
+		}
+		err = createAppleRootStorePEM()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	certPool, err := getCertPoolFromAppleFile()

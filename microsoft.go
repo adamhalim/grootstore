@@ -22,17 +22,20 @@ var (
 // Downloads Microsoft's root store, stores it as a PEM file in MICROSOFT_ROOT_STORE
 // and returns *x509.CertPool of the root store.
 func UpdateMicrosoftRootStore() (*x509.CertPool, error) {
-	fmt.Println("Attempting to download Microsoft root store.")
-	urls, err := getMicrosoftCRTLinks()
-	if err != nil {
-		return nil, err
+	fmt.Println("Attempting to download Microsoft root store...")
+	if !fileExists(MICROSOFT_ROOT_STORE) {
+		urls, err := getMicrosoftCRTLinks()
+		if err != nil {
+			return nil, err
+		}
+		fmt.Printf("Found %d certificates, downloading will take a while...\n", len(urls))
+		err = downloadMicrosoftCRTtoFile(urls, "")
+		if err != nil {
+			return nil, err
+		}
+		fmt.Print("Microsoft downloaded successfully!\n")
 	}
-	fmt.Printf("Found %d certificates, downloading will take a while...\n", len(urls))
-	err = downloadMicrosoftCRTtoFile(urls, "")
-	if err != nil {
-		return nil, err
-	}
-	fmt.Print("Microsoft downloaded successfully!\n")
+
 	certPool, err := getMicrosoftRootStore()
 	if err != nil {
 		return nil, err

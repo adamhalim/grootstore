@@ -60,3 +60,16 @@ func getTlsCert(certInput string) tls.Certificate {
 	}
 	return cert
 }
+
+// Returns true if file already exists
+func fileExists(filename string) bool {
+	stat, err := os.Stat(filename)
+	if err != nil {
+		return false
+	}
+	if stat.Size() > 0 {
+		fmt.Printf("%s already exists.\n", filename)
+		return true
+	}
+	return false
+}

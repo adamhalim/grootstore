@@ -22,15 +22,18 @@ var (
 // and returns *x509.CertPool of the root store.
 func UpdateNSSRootStore() (*x509.CertPool, error) {
 	fmt.Print("Attempting to download NSS root store... ")
-	err := downloadNSSRootStoreCSV()
-	if err != nil {
-		return nil, err
+	if !fileExists(NSS_ROOT_STORE) {
+		err := downloadNSSRootStoreCSV()
+		if err != nil {
+			return nil, err
+		}
+		fmt.Print("NSS downloaded successfully!\n")
+		_, err = createNssPEMFromNssCsv()
+		if err != nil {
+			return nil, err
+		}
 	}
-	fmt.Print("NSS downloaded successfully!\n")
-	_, err = createNssPEMFromNssCsv()
-	if err != nil {
-		return nil, err
-	}
+
 	certPool, err := getCertPoolFromNssPEMFile()
 	if err != nil {
 		return nil, err
