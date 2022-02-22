@@ -36,25 +36,25 @@ if err != nil {
 
 ```
 
-When the stores root stores are already saved, we can get them as `*x509.CertPool` directly with 
+When the root stores are already saved, we can get them as `*x509.CertPool` directly with 
 
 ```go
 nssRootStore, _ := GetNSSRootStore()
 ```
 
-If you simply want to download the latest root stores, you can do so by cloning this repo and running `go test`. The tests in `updates_test.go` will download the latest root stores for NSS, Apple and Microsoft.
+If you simply want to download the latest root stores, you can do so by cloning this repo and running `go test -timeout 25m0s`. The tests in `updates_test.go` will download the latest root stores for NSS, Apple and Microsoft.
 
 ### Changing default directory
 
 By default, root stores are stored in `roots/`. To change this, simply call `SetRootDirectory()`
 
 ```go
-err := SetRootDirectory("data/root_stores")
+err := SetRootDirectory("data/root_stores/")
 if err != nil {
     fmt.Printf("%s\n", err.Error())
 }
 
-// Now, the NSS root store will be saved in data/root_stores instead of roots/
+// Now, the NSS root store will be saved in data/root_stores/ instead of roots/
 nssRootStore, err := UpdateNSSRootStore()
 if err != nil {
     fmt.Printf("%s\n", err.Error())
