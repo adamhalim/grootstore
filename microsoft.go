@@ -12,8 +12,6 @@ import (
 	"os"
 	"sync"
 	"time"
-
-	"github.com/cheggaaa/pb/v3"
 )
 
 var (
@@ -24,12 +22,13 @@ var (
 // Downloads Microsoft's root store, stores it as a PEM file in MICROSOFT_ROOT_STORE
 // and returns *x509.CertPool of the root store.
 func UpdateMicrosoftRootStore() (*x509.CertPool, error) {
-	fmt.Print("Attempting to download Microsoft root store, this will take a while...\n")
+	fmt.Println("Attempting to download Microsoft root store.")
 	urls, err := getMicrosoftCRTLinks()
 	if err != nil {
 		return nil, err
 	}
-	err = downloadMicrosoftCRTtoFile(urls, "", pb.StartNew(len(urls)))
+	fmt.Printf("Found %d certificates, downloading will take a while...\n", len(urls))
+	err = downloadMicrosoftCRTtoFile(urls, "")
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +53,7 @@ func GetMicrosoftRootStore() (*x509.CertPool, error) {
 // in MICROSOFT_ROOT_STORE
 //
 // This function takes an empty PEMstring when run initially.
-func downloadMicrosoftCRTtoFile(CRTlinks []string, PEMstring string, bar *pb.ProgressBar) error {
+func downloadMicrosoftCRTtoFile(CRTlinks []string, PEMstring string) error {
 	var stringLock sync.Mutex
 	var failedLinks []string
 	// Download each .crt PEM in parallell and append
@@ -97,18 +96,16 @@ func downloadMicrosoftCRTtoFile(CRTlinks []string, PEMstring string, bar *pb.Pro
 		}
 		stringLock.Lock()
 		PEMstring += string(PEM)
-		bar.Increment()
+		fmt.Print(".")
 		stringLock.Unlock()
 	}
 
 	// If we had any failed downloads, we run the function recursively
 	// until we succeed with all urls
 	if len(failedLinks) != 0 {
-		downloadMicrosoftCRTtoFile(failedLinks, PEMstring, bar)
+		downloadMicrosoftCRTtoFile(failedLinks, PEMstring)
 		return nil
 	}
-
-	bar.Finish()
 
 	// When all PEMs are downloaded, we store them as a file in MICROSOFT_ROOT_STORE
 	file, err := os.Create(MICROSOFT_ROOT_STORE)
