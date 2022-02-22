@@ -80,6 +80,7 @@ func downloadMicrosoftCRTtoFile(CRTlinks []string, PEMstring string) error {
 		resp, err := http.Get(url)
 		if err != nil {
 			fmt.Println(err.Error())
+			failedLinks = append(failedLinks, url)
 			continue
 		}
 		defer resp.Body.Close()
