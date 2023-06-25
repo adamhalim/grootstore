@@ -24,7 +24,7 @@ var (
 	APPLE_DIRECTORY        = ROOT_FOLDER + "apple/"
 	APPLE_UNPACKED_DIR     = APPLE_DIRECTORY + "security_certificates-security_certificates-" + APPLE_SECURITY_VERSION
 	APPLE_ROOTS_DIRECTORY  = APPLE_UNPACKED_DIR + "/certificates/roots/"
-	APPLE_SECURITY_VERSION = "55188.80.4"
+	APPLE_SECURITY_VERSION = "55245.80.2"
 	APPLE_ROOT_URL         = "https://github.com/apple-oss-distributions/security_certificates/archive/refs/tags/security_certificates-" + APPLE_SECURITY_VERSION + ".tar.gz"
 )
 
