@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	STATUS_INDEX = 8
+	STATUS_INDEX = 0
 )
 
 // Scrapes MICROSOFT_URL for crt.sh links. Filters out certs that
