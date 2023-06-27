@@ -1,5 +1,5 @@
 # Grootstore - Root Store Utilities
-Grootstore is a utility that downloads root stores in PEM format. It currently supports downloading the latest Microsoft, Apple and NSS root store.
+Grootstore is a utility that downloads root stores in PEM format. It currently supports downloading the latest Microsoft, Apple NSS, and Chromium root stores.
 
 
 ## Installation
@@ -42,7 +42,7 @@ When the root stores are already saved, we can get them as `*x509.CertPool` dire
 nssRootStore, _ := GetNSSRootStore()
 ```
 
-If you simply want to download the latest root stores, you can do so by cloning this repo and running `go test -timeout 5m0s`. The tests in `updates_test.go` will download the latest root stores for NSS, Apple and Microsoft.
+If you simply want to download the latest root stores, you can do so by cloning this repo and running `go test -timeout 5m0s`. The tests in `updates_test.go` will download the latest root stores for NSS, Apple, Microsoft and Chromium.
 
 ### Changing default directory
 
@@ -65,3 +65,4 @@ if err != nil {
 
 1. More ways of using the root store PEM files, such as getting them as a `[]x509.Certificate` for example.
 2. Make it run on all platforms. Currently uses `mv` to move files for Apple roots.
+3. A simple CLI.
