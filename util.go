@@ -42,6 +42,8 @@ func updatePaths() {
 	APPLE_DIRECTORY = ROOT_FOLDER + "apple/"
 	APPLE_UNPACKED_DIR = APPLE_DIRECTORY + "security_certificates-" + APPLE_SECURITY_VERSION
 	APPLE_ROOTS_DIRECTORY = APPLE_UNPACKED_DIR + "/certificates/roots/"
+
+	CHROMIUM_ROOT_STORE = ROOT_FOLDER + "ChromiumRoot.pem"
 }
 
 // Generates tls.Certificate from PEM string

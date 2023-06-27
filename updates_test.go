@@ -28,3 +28,10 @@ func TestUpdateMicrosoft(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 }
+
+func TestUpdateChromium(t *testing.T) {
+	_, err := UpdateChromiumRootStore()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+}
