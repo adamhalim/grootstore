@@ -8,6 +8,7 @@ import (
 
 const (
 	STATUS_INDEX = 0
+	SHA1_INDEX   = 3
 )
 
 // Scrapes MICROSOFT_URL for crt.sh links. Filters out certs that
@@ -15,20 +16,21 @@ const (
 func getMicrosoftCRTLinks() ([]string, error) {
 
 	c := colly.NewCollector()
-	var urls []string
+	var fingerprints []string
 	c.OnHTML(".dataRow", func(e *colly.HTMLElement) {
+		saveCert := false
 		e.ForEach("span", func(i int, h *colly.HTMLElement) {
 			if i == STATUS_INDEX {
-				if h.Text != "Disabled" {
-					// Filter out certificates that are "Disabled"
-					urls = append(urls, e.ChildAttr("a", "href"))
-				}
+				saveCert = h.Text != "Disabled"
+			}
+			if saveCert && i == SHA1_INDEX {
+				fingerprints = append(fingerprints, h.Text)
 			}
 		})
 	})
-	c.Visit(MICROSOFT_URL)
-	if len(urls) == 0 {
+	c.Visit(MICROSOFT_LIST_URL)
+	if len(fingerprints) == 0 {
 		return nil, errors.New("no microsoft urls found")
 	}
-	return urls, nil
+	return fingerprints, nil
 }

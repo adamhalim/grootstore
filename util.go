@@ -1,6 +1,7 @@
 package grootstore
 
 import (
+	"bytes"
 	"crypto/tls"
 	"encoding/pem"
 	"fmt"
@@ -61,6 +62,17 @@ func getTlsCert(certInput string) tls.Certificate {
 		}
 	}
 	return cert
+}
+
+// Returns a PEM encoded certificate
+func getPEMdata(data []byte) string {
+	// pem.Encode will write to this buffer that we then convert to a string
+	buf := new(bytes.Buffer)
+	if err := pem.Encode(buf, &pem.Block{Type: "CERTIFICATE", Bytes: data}); err != nil {
+		fmt.Printf("Failed to PEM encode cert: %q", err.Error())
+	}
+	s := buf.String()
+	return s
 }
 
 // Returns true if file already exists

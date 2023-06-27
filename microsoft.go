@@ -11,12 +11,12 @@ import (
 	"net/http"
 	"os"
 	"sync"
-	"time"
 )
 
 var (
-	MICROSOFT_URL        = "https://ccadb-public.secure.force.com/microsoft/IncludedCACertificateReportForMSFT"
+	MICROSOFT_LIST_URL   = "https://ccadb-public.secure.force.com/microsoft/IncludedCACertificateReportForMSFT"
 	MICROSOFT_ROOT_STORE = ROOT_FOLDER + "MSroot.pem"
+	MICROSOFT_CERTS_URL  = "http://ctldl.windowsupdate.com/msdownload/update/v3/static/trustedr/en/"
 )
 
 // Downloads Microsoft's root store, stores it as a PEM file in MICROSOFT_ROOT_STORE
@@ -56,62 +56,50 @@ func GetMicrosoftRootStore() (*x509.CertPool, error) {
 // in MICROSOFT_ROOT_STORE
 //
 // This function takes an empty PEMstring when run initially.
-func downloadMicrosoftCRTtoFile(CRTlinks []string, PEMstring string) error {
+func downloadMicrosoftCRTtoFile(sha1Fingerprints []string, PEMstring string) error {
 	var stringLock sync.Mutex
-	var failedLinks []string
-	// Download each .crt PEM in parallell and append
-	// to PEMstring
+	var failedFingerprints []string
 
-	for _, url := range CRTlinks {
-		// crt.sh imposes quite a low rate limit. Better to not run this
-		// in parallell, and maybe even impose an artificial bottleneck.
-		// If we fail to download a certificate, we add it to failedLinks
-		// and run the function recursively until we have downloaded everything.
-		// Unfortunately, this function takes a long time to complete, but it
-		// doesn't need to be run that often (MS updates their root store once a month)
-		time.Sleep(2 * time.Second)
-
-		if url == "" {
+	for _, fingerprint := range sha1Fingerprints {
+		if fingerprint == "" {
 			// There were some issues with []CRTlinks sometimes having 1
 			// empty string which seems to be resolved, but
 			// I'll keep this here for now.
 			continue
 		}
-		resp, err := http.Get(url)
+
+		resp, err := http.Get(MICROSOFT_CERTS_URL + fingerprint + ".crt")
 		if err != nil {
 			fmt.Println(err.Error())
-			failedLinks = append(failedLinks, url)
+			failedFingerprints = append(failedFingerprints, fingerprint)
 			continue
 		}
 		defer resp.Body.Close()
 		if resp.StatusCode != http.StatusOK {
 			fmt.Printf("bad status: %d\n", resp.StatusCode)
-			// When a download fails, we add it to failedLinks
-			failedLinks = append(failedLinks, url)
+			// When a download fails, we add it to failedFingerprints and try again later
+			failedFingerprints = append(failedFingerprints, fingerprint)
 			continue
 		}
-		PEM, err := io.ReadAll(resp.Body)
+		cert, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return err
 		}
-		tlsCert := getTlsCert(string(PEM))
-		if len(tlsCert.Certificate) == 0 {
-			fmt.Println(string(PEM))
-		}
+		pem := getPEMdata(cert)
 		stringLock.Lock()
-		PEMstring += string(PEM)
+		PEMstring += pem
 		fmt.Print(".")
 		stringLock.Unlock()
 	}
 
 	// If we had any failed downloads, we run the function recursively
 	// until we succeed with all urls
-	if len(failedLinks) != 0 {
-		downloadMicrosoftCRTtoFile(failedLinks, PEMstring)
+	if len(failedFingerprints) != 0 {
+		downloadMicrosoftCRTtoFile(failedFingerprints, PEMstring)
 		return nil
 	}
 
-	// When all PEMs are downloaded, we store them as a file in MICROSOFT_ROOT_STORE
+	// When all certificates are downloaded, we store them as a file in MICROSOFT_ROOT_STORE
 	file, err := os.Create(MICROSOFT_ROOT_STORE)
 	if err != nil {
 		return err
